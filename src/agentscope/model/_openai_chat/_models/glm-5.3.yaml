@@ -1,0 +1,28 @@
+# 本地 OpenAI 兼容网关（http://10.10.1.226:1120/v1）上的 GLM 模型卡。
+# AgentScope 的 Web UI 模型下拉列表只扫描本目录的静态 yaml 模型卡，
+# 自定义网关模型必须在此注册才会出现在选择列表中。
+name: glm-5.3
+label: GLM-5.3 (Local Gateway)
+status: active
+
+# 保守声明支持的输入类型：纯文本对话（网关未确认多模态能力时不开启图像输入）
+input_types:
+  - text/plain
+
+output_types:
+  - text/plain
+
+# 网关未暴露模型真实上下文窗口，使用保守默认值
+context_size: 128000
+output_size: 16384
+
+parameter_overrides:
+  max_tokens:
+    maximum: 16384
+  # 非 OpenAI 官方模型，隐藏不适用的 OpenAI 专属参数
+  thinking_enable:
+    hidden: true
+  reasoning_effort:
+    hidden: true
+  voice:
+    hidden: true

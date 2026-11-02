@@ -33,6 +33,13 @@ default_mcps = [
         ),
         is_stateful=True,
     ),
+    MCPClient(
+        name="dbhub",
+        mcp_config=HttpMCPConfig(
+            url="http://10.12.1.229:8080/mcp",
+        ),
+        is_stateful=False,
+    ),
 ]
 
 if os.getenv("AMAP_API_KEY"):
@@ -47,12 +54,22 @@ if os.getenv("AMAP_API_KEY"):
         ),
     )
 
+# Redis 地址环境变量化：默认值保持原行为（本地裸跑不受影响），
+# docker-compose 中通过 REDIS_HOST=redis 指向独立的 redis 服务。
 storage = RedisStorage(
-    host="localhost",
-    port=6379,
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", "6379")),
 )
 
-vector_store = QdrantStore(location=":memory:")
+# 嵌入式持久化：向量数据落盘到 qdrant_storage/（容器内挂卷），重启不丢。
+# 注意参数用 path 而非 location：location 仅接受 ":memory:" 或服务 URL，
+# path 才是"本地目录的落盘实例"模式（见 QdrantStore.__init__ 签名）。
+vector_store = QdrantStore(
+    path=os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "qdrant_storage",
+    ),
+)
 
 
 async def longterm_memory_factory(

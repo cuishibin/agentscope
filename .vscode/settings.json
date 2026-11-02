@@ -1,0 +1,23 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.executeInFileDir": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}\\",
+    "${workspaceFolder}\\src"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}\\",
+    "${workspaceFolder}\\src"
+  ],
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}\\;${workspaceFolder}\\src"
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.trae": true,
+    "**/graphify-out": true,
+    "**/*.pyc": true, // 可选：同时隐藏 .pyc 文件
+    "**/.pytest_cache": true // 可选：同时隐藏 .log 文件
+  }
+}
