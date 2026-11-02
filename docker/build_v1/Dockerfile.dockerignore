@@ -1,0 +1,21 @@
+# 本文件为 BuildKit 的 Dockerfile 专属 ignore（<Dockerfile 名>.dockerignore），
+# 作用于构建上下文（仓库根目录），优先级高于上下文根的 .dockerignore。
+# 构建上下文为仓库根目录，必须精确排除以下内容，
+# 否则上下文上传缓慢且可能破坏构建：
+# 版本库与 CI
+.git
+.github
+# 设计文档目录（注意是 docker/docs/，不是仓库根 docs/）
+docker/docs
+# 前端/Node 产物与依赖
+**/node_modules
+**/dist
+# 运行期本地数据（已挂卷，不应进入镜像）
+examples/agent_service/workspaces
+examples/agent_service/qdrant_storage
+# Python 缓存
+**/__pycache__
+**/*.pyc
+.venv
+# 本地环境文件
+.env

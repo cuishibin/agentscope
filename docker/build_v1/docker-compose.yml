@@ -1,0 +1,52 @@
+# AgentScope Docker Compose
+# 用法：cd docker/build && docker compose up -d --build
+# 依赖：同目录 .env（可从 .env.example 复制）
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes   # AOF 持久化，重启不丢
+    volumes:
+      - agentscope_redis_data:/data
+    healthcheck:                             # 确保 FastAPI 启动时 Redis 已就绪
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  agent-service:                       # 智能体服务后端（FastAPI）
+    build:
+      context: ../..
+      dockerfile: docker/build/Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    working_dir: /app/agent_service
+    environment:
+      - REDIS_HOST=redis
+      - AMAP_API_KEY=${AMAP_API_KEY:-}
+      - CLAWHUB_API_TOKEN=${CLAWHUB_API_TOKEN:-}
+    volumes:
+      - agentscope_workspaces:/app/agent_service/workspaces
+      - agentscope_qdrant:/app/agent_service/qdrant_storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy      # 等待 Redis 就绪，避免启动即连失败
+    restart: unless-stopped
+
+  web-ui:                             # 智能体服务前端（Express + 静态产物）
+    build:
+      context: ../..
+      dockerfile: docker/build/Dockerfile
+    command: node dist/index.js
+    working_dir: /app/web_ui/backend
+    environment:
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  agentscope_redis_data:   # 显式命名，避免多 compose 项目间卷混淆
+  agentscope_workspaces:   # LocalWorkspaceManager 工作区 / 长期记忆
+  agentscope_qdrant:       # Qdrant 嵌入式向量存储落盘
